@@ -11,38 +11,31 @@ Program PIC_MCC_for_CCP
    Implicit none
    Integer(4) :: i,j,k
    real(8) Cpu1,Cpu2
-   Integer(4) :: NRun=1,NDiagShort=1,NDiagLong=0
-  ! Integer(4) :: NRun=20,NDiagShort=1,NDiagLong=0
-   !Integer(4) :: NRun=2000,NDiagShort=10,NDiagLong=100
+   !Integer(4) :: NRun=0,NDiagShort=1,NDiagLong=0
+   !Integer(4) :: NRun=20,NDiagShort=1,NDiagLong=0
+    Integer(4) :: NRun=5000,NDiagShort=200,NDiagLong=200
    Call Initilalization()
-   ParticleBDOneGlobal(0)%Gamma=0.0d0
-   ParticleBDOneGlobal(1)%Gamma=0.3d0
-                     !   do k=0,1                
-                     !        Write(*,*) ParticleGlobal(k)%Npar,k,"before"
-                     !        Call PhaseSpaceNormalization2(ParticleGlobal(k)%Npar*4,ParticleGlobal(k))
-                     !        Write(*,*) ParticleGlobal(k)%Npar,k,"after" 
-                     !end do
+   ParticleBDOneGlobal(0)%Gamma=0.2d0
+   ParticleBDOneGlobal(1)%Gamma=0.2d0
    !Call InitilalizationDiag()
   Write(*,*) 'aa',NParticle,Period
-  Call CPU_TIME(Cpu1)
   do j=1,NRun!00  !10  !200
-           do i=1,1
+           do i=1,Period
                  Call OneStep()
-                 !If (ParticleGlobal(0)%Npar>ParticleGlobal(0)%NParNormal) then
-                 !    do k=0,1                
-                 !            Write(*,*) ParticleGlobal(k)%Npar,k,"before"
-                 !            Call PhaseSpaceNormalization2(ParticleGlobal(k)%Npar/2,ParticleGlobal(k))
-                 !            Write(*,*) ParticleGlobal(k)%Npar,k,"after" 
-                 !    end do
-                 !End If
+                 If (ParticleGlobal(0)%Npar>ParticleGlobal(0)%NParNormal) then
+                     do k=0,1                
+                             Write(*,*) ParticleGlobal(k)%Npar,k,"before"
+                             Call PhaseSpaceNormalization2(ParticleGlobal(k)%Npar/2,ParticleGlobal(k))
+                             Write(*,*) ParticleGlobal(k)%Npar,k,"after" 
+                     end do
+                 End If
             ENDDO
             !Call UpdateFieldBounday(FieldBoundaryGlobal,NParticle,ParticleBDOneGlobal)
-            !Call OneStepRestart()
-            !Write(*,*) i,Period,ParticleGlobal%NPar,j,"Period",FieldBoundaryGlobal%Vdc
+            Call OneStepRestart()
+            Write(*,*) i,Period,ParticleGlobal%NPar,j,"Period",FieldBoundaryGlobal%Vdc
     End do
-   Call CPU_TIME(Cpu2)
-    Write(*,*)  'CPUTime',  CPU2-CPU1
-    
+  
+
      Call DiagInitilalization()
      do j=1,NDiagShort
          do i=1,Period

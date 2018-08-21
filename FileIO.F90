@@ -154,6 +154,19 @@
                 end do
                 close(10)
                 Write(*,*) "Save ",Filename,"Complete!"
+            Type is (Grid2D(*,*,*))
+                Write(filename,*) "Grid2D",NameIndex,".dat"
+                Filename=Trim(filename)
+                Write(*,*) "Saving ",Filename," Please wait..."
+                open (10,file=filename)
+                Ns=GD%Ns
+                do i=0,GD%Ny
+                     do j=1,GD%Nx
+                       Write(10,FMt="(<2+Ns>D23.15)")  dble(j-1)*GD%dx,dble(i-1)*GD%dy,(GD%Value(j,i,k),k=1,Ns)
+                     End do
+                end do
+                close(10)
+                Write(*,*) "Save ",Filename,"Complete!"
             End Select
         return
      end subroutine GridDump
@@ -168,6 +181,12 @@
                     GD%Timer=0
                     GD%Period=Period
                     GD%Dx=Dx
+                    GD%Value=0.d0
+            Type is (Grid2D(*,*,*))
+                    GD%Timer=0
+                    GD%Period=Period
+                    GD%Dx=Dx
+                    GD%Dy=2.d0/Dble(GD%Ny)!FG%Dt
                     GD%Value=0.d0
             End Select
         return
@@ -197,34 +216,7 @@
         close(10)
         Write(*,*) "Save ",filename,"Complete!"  
         return
-              end subroutine DumpFieldSolver
-              
- subroutine DumpFieldOne(NSpecy,FO,Mode)
-        Implicit none
-        Integer(4),intent(in) :: NSpecy
-        Type(FieldOne),intent(inout) :: FO(0:NSpecy)
-        Integer(4) :: Mode
-        Character(len=99) :: Filename
-        Integer(4):: i,j,NameIndex
-        Integer(4),save :: NameTimer=1
-        If (Mode==0) Then
-                   NameIndex=DefaultNameIndex
-        else
-                   NameIndex=DefaultNameIndexInit+ModeMultiplier*Mode+NameTimer
-                   NameTimer=NameTimer+1
-        End If 
-        
-        Write(filename,*) NameIndex,"FieldOne",".dat"
-        Write(*,*) "Saving ",filename," Please wait..."
-        open (10,file=filename)
-        Write(10,*)  FO%Nx,FO%Dx,FO%Dt
-        do i=1,FO(0)%Nx
-               Write(10,FMt="(<NSpecy+3>D23.15)") dble(i-1)*FO%Dx,(ABS(FO(j)%RhoOne(i)/ElectronCharge),j=0,NSpecy)
-        end do
-        close(10)
-        Write(*,*) "Save ",filename,"Complete!"  
-        return
-              end subroutine DumpFieldOne    
+     end subroutine DumpFieldSolver
      
    END  Module FileIO
         !subroutine DumpFieldOne(SpecyIndex,FO)

@@ -10,7 +10,7 @@ Module OneStepModule
                   Integer(4),save :: NParticle=0  
                   Type(ParticleBundle),save ::  ParticleGlobal(0:NSpecyMax)
                   Type(ParticleBoundaryOne),save  :: ParticleBDOneGlobal(0:NSpecyMax)
-                  !Type(ParticleBoundary),save  :: ParticleBDGlobal
+                  Type(ParticleBoundary),save  :: ParticleBDGlobal
       
       !  This section defines the MCC and gas properties.
                  Integer(4),parameter :: NSpecyGasMax=1_4
@@ -77,30 +77,23 @@ Module OneStepModule
                Use SEEModule
              !  Use ,only : R
                Implicit none
-               !Integer(4) :: Ntemp                   !Ntemp=ParticleGlobal(0)%NPar
             !   Real(8)::GamaE=0.2d0,GamaI=0.2d0
-                                    !Write(*,*) ParticleBDOneGlobal%CountMinOne,ParticleBDOneGlobal%CountMin,ParticleGlobal%NPar
                Integer(4) :: i,j
                do i=0,NParticle
                      Call ParticleMove(ParticleGlobal(i),FieldGlobal)
-                     !Call ParticleAborption(ParticleGlobal(i),ParticleBDOneGlobal(i))
-                     !Call Selectron(ParticleGlobal(0),ParticleBDOneGlobal(i))
-                     !Call WeightingOne(ParticleGlobal(i), FieldOneGlobal(i))
+                     Call ParticleAborption(ParticleGlobal(i),ParticleBDOneGlobal(i))
+                   !  Call Selectron(ParticleGlobal(0),ParticleBDOneGlobal(i))
+                     Call WeightingOne(ParticleGlobal(i), FieldOneGlobal(i))
                end do
-              ! !Ntemp=ParticleGlobal(0)%NPar
-              ! !Call Selectron(ParticleGlobal(0),ParticleBDOneGlobal(1))
-              !! If(ParticleGlobal(0)%NPar>NTEMP) Write(*,*) ParticleGlobal(0)%NPar,'SEE!!',i,ParticleGlobal(0)%NPar-NTEMP
-              !                  
-              !  Call FieldOneStep(FieldGlobal,NParticle,FieldOneGlobal,FieldSolverGlobal,FieldBoundaryGlobal)
-              !                 !Write(*,*) FieldBoundaryGlobal%V1,FieldBoundaryGlobal%V2
-              ! !Write(*,*)  ParticleGlobal%NPar,'Before'  
-              !
-              !       
-              !  do i=1, Ngas
-              !     do j=0,NParticle
-              !         Call MCC(j,NParticle,ParticleGlobal,GasGlobal(i),MCCBundleGlobal(j,i)) 
-              !     end do
-               !end do
+
+                Call FieldOneStep(FieldGlobal,NParticle,FieldOneGlobal,FieldSolverGlobal,FieldBoundaryGlobal)
+                               !Write(*,*) FieldBoundaryGlobal%V1,FieldBoundaryGlobal%V2
+               !Write(*,*)  ParticleGlobal%NPar,'Before'  
+                do i=1, Ngas
+                   do j=0,NParticle
+                       Call MCC(j,NParticle,ParticleGlobal,GasGlobal(i),MCCBundleGlobal(j,i)) 
+                   end do
+               end do
               return
     End  subroutine OneStep
     
@@ -111,7 +104,6 @@ Module OneStepModule
                Write(*,*) Period,ParticleGlobal%NPar,"Period"!,FieldBoundaryGlobal%Qmin,FieldBoundaryGlobal%Qmax
                Call DumpFieldSolver(FieldSolverGlobal,0)
                Call DumpField(FieldGlobal,0)
-               Call DumpFieldOne(1,FieldOneGlobal,0)
                do i=0,1
                      Call DumpParticle(ParticleGlobal(i),0)
                End do
@@ -127,10 +119,13 @@ Module OneStepModule
       Use Diagnostics
       Implicit none
       Type(Grid1D(Nx=NxMax,Ns=11)),save :: G1DDiagParticleField
+      Type(Grid2D(Nx=NxMax,Ny=100,Ns=11)),save :: G2DDiagParticleField
       
       Type(Grid1D(Nx=NxMax,Ns=3)),save :: G1DDiagParticleCR
+      Type(Grid2D(Nx=NxMax,Ny=100,Ns=3)),save :: G2DDiagParticleCR
 
       Type(Grid1D(Nx=500,Ns=2)),save :: G1DDiagParticleEDF
+      Type(Grid2D(Nx=500,Ny=100,Ns=2)),save :: G2DDiagParticleEDF
       
       Type(ParticleElectrode),save :: ParticleElectrodeGlobal(0:NSpecyMax)
       
@@ -138,25 +133,33 @@ Module OneStepModule
       Subroutine DiagInitilalization()
             Implicit none
                  Call DiagParticleFieldPeriod(G1DDiagParticleField,1,ParticleGlobal,FieldGlobal,-1)
+                 Call DiagParticleFieldPeriod(G2DDiagParticleField,1,ParticleGlobal,FieldGlobal,-1)
                  Call DiagParticleEDFOne(G1DDiagParticleEDF,ParticleGlobal(0),-1)
+                 Call DiagParticleEDFOne(G2DDiagParticleEDF,ParticleGlobal(0),-1)
                  Call DiagParticleCollisionRateOne(G1DDiagParticleCR,ParticleGlobal(0),MCCBundleGlobal(0,1),-1)
-                 
+                 Call DiagParticleCollisionRateOne(G2DDiagParticleCR,ParticleGlobal(0),MCCBundleGlobal(0,1),-1)
             return  
       End Subroutine DiagInitilalization
       
       Subroutine  DiagOneStep()
           Implicit none   
              Call DiagParticleFieldPeriod(G1DDiagParticleField,1,ParticleGlobal,FieldGlobal,0)
+             Call DiagParticleFieldPeriod(G2DDiagParticleField,1,ParticleGlobal,FieldGlobal,0)
              Call DiagParticleEDFOne(G1DDiagParticleEDF,ParticleGlobal(0),0)
+             Call DiagParticleEDFOne(G2DDiagParticleEDF,ParticleGlobal(0),0)
              Call DiagParticleCollisionRateOne(G1DDiagParticleCR,ParticleGlobal(0),MCCBundleGlobal(0,1),0)
-          return  
+             Call DiagParticleCollisionRateOne(G2DDiagParticleCR,ParticleGlobal(0),MCCBundleGlobal(0,1),0)
+        return  
       End Subroutine DiagOneStep
       
        Subroutine DiagOneStepFinal()
        Implicit none  
              Call DiagParticleFieldPeriod(G1DDiagParticleField,1,ParticleGlobal,FieldGlobal,1)
+             Call DiagParticleFieldPeriod(G2DDiagParticleField,1,ParticleGlobal,FieldGlobal,1)
              Call DiagParticleEDFOne(G1DDiagParticleEDF,ParticleGlobal(0),1)
+             Call DiagParticleEDFOne(G2DDiagParticleEDF,ParticleGlobal(0),1)
              Call DiagParticleCollisionRateOne(G1DDiagParticleCR,ParticleGlobal(0),MCCBundleGlobal(0,1),1)
+             Call DiagParticleCollisionRateOne(G2DDiagParticleCR,ParticleGlobal(0),MCCBundleGlobal(0,1),1)
           return  
         End Subroutine DiagOneStepFinal
 

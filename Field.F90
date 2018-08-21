@@ -8,7 +8,7 @@
                          Integer(4) :: FieldBoundaryModel=11
                          Integer(4) :: Timer=0,Period
                          Real(8) :: Dt=Inputdt
-                         Real(8) :: Frequency(2)=(/13.56d6,2.d6/),Voltage(2)=(/200.d0,100.d0/)
+                         Real(8) :: Frequency(2)=(/13.56d6,2.d6/),Voltage(2)=(/300.d0,100.d0/)
                          Real(8) :: V1=0.d0,V2=0.d0
                          Real(8) :: Vdc=0.d0!-20.d0
      EndType FieldBoundary
@@ -66,7 +66,7 @@
             Select case (FB%FieldBoundaryModel)
                       case (11)
                                FB%V1=FB%Vdc+FB%Voltage(1)*DSin(2*PI*FB%Frequency(1)*FB%dt*Dble(FB%Timer))
-                               FB%V2=-100.d0
+                               FB%V2=0.d0
                       case (21)
                                FB%V1=FB%Vdc+FB%Voltage(1)*DCos(2*PI*FB%Frequency(1)*FB%dt*Dble(FB%Timer))+FB%Voltage(2)*DCos(2*PI*FB%Frequency(2)*FB%dt*Dble(FB%Timer))
                                FB%V2=0.d0

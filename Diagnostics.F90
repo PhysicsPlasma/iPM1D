@@ -216,7 +216,27 @@ Module Diagnostics
                              Call GridDump(GD,0)
                          case default
                          End Select
+                    Type is (Grid2D(*,*,*))
+                        Select Case (Mode)
+                            Case(-1)
+                                Call GridInitialization(GD,PB%Period,PB%Dx,PB%Dt)
+                            case(0)
+                                Shift=1
+                                Call WeightingParticleCollisionRate(PB,PCR,MCCB)
+                                do i=1,MCCB%NReaction
+                                      Call GridUpdate(GD,GD%Nx,PCR%CollisionRate(:,i),Shift)
+                                End Do
+                                GD%Timer=GD%Timer+1
+                            Case(1) 
+                                     Call GridRescale(GD)
+                                     Call GridDump(GD,1)
+                                     GD%Value=0.d0
+                                     GD%Timer=0
+                             Case(2)
+                                 Call GridDump(GD,0) 
+                             case default
                          End Select     
+                    End select
             return
         end subroutine DiagParticleCollisionRateOne
 
@@ -257,6 +277,25 @@ Module Diagnostics
                              Call GridDump(GD,0)
                          case default
                          End Select
+                    Type is (Grid2D(*,*,*))
+                        Select Case (Mode)
+                            Case(-1)
+                                Call GridInitialization(GD,PB%Period,PEDF%EnergyInterval,PB%Dt)
+                            case(0)
+                                Shift=1
+                                Call WeightingParticleEDF(PB,PEDF)
+                                Call GridUpdate(GD,GD%Nx,PEDF%EDF,Shift)
+                                Call GridUpdate(GD,GD%Nx,PEDF%EDFNormalized,Shift)
+                                GD%Timer=GD%Timer+1
+                            Case(1) 
+                                     Call GridRescale(GD)
+                                     Call GridDump(GD,1)
+                                     GD%Value=0.d0
+                                     GD%Timer=0
+                             Case(2)
+                                 Call GridDump(GD,0) 
+                             case default
+                         End Select     
                     End select
             return
         end subroutine DiagParticleEDFOne
@@ -367,6 +406,33 @@ Module Diagnostics
                      case default
                          
                      End Select
+                Type is (Grid2D(*,*,*))
+                    Select Case (Mode)
+                        Case(-1)
+                                          Call GridInitialization(GD,FG%Period,FG%Dx,FG%Dt)
+                        case(0)
+                            Shift=1
+                             Do i=0, NSpecy
+                                          Call WeightingParticleMomentum(PB(i),TempPMO)
+                                          Call GridUpdate(GD,GD%Nx,TempPMO%RhoOne,Shift)
+                                          Call GridUpdate(GD,GD%Nx,TempPMO%JxOne,Shift)
+                                          Call GridUpdate(GD,GD%Nx,TempPMO%TOne,Shift)
+                                          HeatingRate=TempPMO%JxOne*FG%Ex
+                                          Call GridUpdate(GD,GD%Nx,HeatingRate,Shift)
+                            End do
+                            Call GridUpdate(GD,GD%Nx,FG%Ex,Shift)
+                            Call GridUpdate(GD,GD%Nx,FG%Phi,Shift)
+                            Call GridUpdate(GD,GD%Nx,FG%Rho,Shift)
+                            GD%Timer=GD%Timer+1
+                        Case(1) 
+                                 Call GridRescale(GD)
+                                 Call GridDump(GD,1)
+                                 GD%Value=0.d0
+                                 GD%Timer=0
+                         Case(2)
+                             Call GridDump(GD,0) 
+                         case default
+                     End Select     
                 End select
         Return    
      End Subroutine  DiagParticleFieldPeriod
@@ -383,8 +449,25 @@ Module Diagnostics
                  If (Shift>=1.and.Shift<=GD%Ns) Then
                      GD%Value(1:Nx,Shift)=GD%Value(1:Nx,Shift)+A1D(1:Nx)
                  End If
-             ENd Select
-           Shift=Shift+1
+             Type is (Grid2D(*,*,*))
+                 N0=Mod(GD%Timer,GD%Period)
+                 If (GD%Period>GD%Ny) Then
+                         NZip=GD%Period/GD%Ny
+                         N1=NZip*GD%Ny
+                        If (Shift>=1.and.Shift<=GD%Ns) Then
+                                 If (N0<N1) Then
+                                    Index=N0/NZip
+                                    GD%Value(1:Nx,Index,Shift)=GD%Value(1:Nx,Index,Shift)+A1D(1:Nx)
+                                Else
+                                    Index=GD%Ny
+                                    GD%Value(1:Nx,Index,Shift)=GD%Value(1:Nx,Index,Shift)+A1D(1:Nx)
+                                ENd If
+                        End If
+                 Else
+                     GD%Value(1:Nx,N0,Shift)=GD%Value(1:Nx,N0,Shift)+A1D(1:Nx)
+                 End If
+             End Select
+             Shift=Shift+1
          Return    
      End Subroutine  GridUpdate
      
@@ -397,6 +480,19 @@ Module Diagnostics
                  If (GD%Timer>=1) Then
                        GD%Value=GD%Value/dble(GD%Timer)
                  End If
+             Type is (Grid2D(*,*,*))
+                 If (GD%Timer>=1) Then
+                     Timers=DBLE(GD%Timer/GD%Period+1)
+                     If (GD%Period>GD%Ny) Then
+                         Spaces=dble(GD%Period/GD%Ny)
+                         GD%Value(:,0:GD%Ny-1,:)=GD%Value(:,0:GD%Ny-1,:)/(Spaces*Timers)
+                         Spaces=dble(GD%Period-GD%Period/GD%Ny*GD%Ny)
+                         GD%Value(:,GD%Ny,:)=GD%Value(:,GD%Ny,:)/(Spaces*Timers)
+                     Else
+                         Spaces=1.d0
+                         GD%Value(:,0:GD%Ny,:)=GD%Value(:,0:GD%Ny,:)/(Spaces*Timers)
+                     End If
+                 End IF
              End Select
          Return    
      End Subroutine  GridRescale

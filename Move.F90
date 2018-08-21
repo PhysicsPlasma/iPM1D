@@ -93,15 +93,15 @@ Module ParticleBoundaryModule
   Use Constants
   Use ParticleModule
   Implicit none
-       !Type ParticleBoundary
-       !                 !Integer(4) :: XStart=0,XEnd=1
-       !                  Integer(4) :: ParticleBoundaryModel=11
-       !                  Real(8) :: XMin=0.d0,XMax=dble(NxMax-1)!,XLength=99.d0
-       !                  
-       !                  !Integer(4) :: 
-       !                  !Real(8) :: 
-       !                  
-       !EndType ParticleBoundary
+       Type ParticleBoundary
+                        !Integer(4) :: XStart=0,XEnd=1
+                         Integer(4) :: ParticleBoundaryModel=12
+                         Real(8) :: XMin=0.d0,XMax=dble(NxMax-1)!,XLength=99.d0
+                         
+                         !Integer(4) :: 
+                         !Real(8) :: 
+                         
+       EndType ParticleBoundary
        
        Type ParticleBoundaryOne
                         !Integer(4) :: XStart=0,XEnd=1
@@ -109,7 +109,7 @@ Module ParticleBoundaryModule
                          Real(8) :: XMin=0.d0,XMax=dble(NxMax-1)!,XLength=99.d0 
                          Integer :: CountMinOne=0,CountmaxOne=0
                          Integer :: CountMin=0,Countmax=0
-                         Real(8) :: Gamma=0.1
+                         Real(8) :: Gamma=0.2d0
                          Integer(4) :: SEENparMin,SEENparMax
                          Type(ParticleBundle) :: PBLower,PBUpper
        EndType ParticleBoundaryOne
@@ -142,8 +142,8 @@ Module ParticleBoundaryModule
                          Call DelParticle(i,PB)                         
                      end if
                 end do
-                PBDO%CountMin=PBDO%CountMin+PBDO%CountMinOne
-                PBDO%CountMax=PBDO%CountMax+PBDO%CountMaxOne
+              PBDO%CountMin=PBDO%CountMin+PBDO%CountMinOne
+              PBDO%CountMax=PBDO%CountMax+PBDO%CountMaxOne
             case(12)
                 PBDO%CountMinOne=0
                 PBDO%CountMaxOne=0
@@ -165,7 +165,28 @@ Module ParticleBoundaryModule
         End Select 
         return
   end subroutine ParticleAborption
-  end  Module ParticleBoundaryModule
+  !
+  !subroutine AborptionCount(PB,XMin,XMax,CountMin,CountMax)
+  !      implicit none
+  !      Type(ParticleBundle),intent(inout) :: PB
+  !      Real(8),intent(in)  :: XMin,XMax
+  !     ! Integer,intent(in) :: Sign
+  !      Integer,intent(inout) :: CountMin,CountMax
+  !      Integer :: i
+  !      CountMin=0
+  !      CountMax=0
+  !      do i=PB%NPar,1,-1
+  !         If (PB%PhaseSpace(i)%X<=XMin) then
+  !            CountMin=CountMin+1
+  !            Call DelParticle(i,PB)
+  !         else If (PB%PhaseSpace(i)%X>=XMax) then
+  !             CountMax=CountMax+1
+  !            Call DelParticle(i,PB)
+  !         end if
+  !      end do
+  !      return
+  ! end subroutine AborptionCount
+    end  Module ParticleBoundaryModule
     
 Module SEEModule
     Use TypeModule
@@ -183,13 +204,12 @@ Module SEEModule
                Type(ParticleOne) :: ParticleTemp
                Integer(4) :: i
                Type(Gas),parameter :: SEEGas=(Gas(1,0,9.1095d-31,0.026d0*11605.d0,0.d0,0.d0)) 
-               Real(8) :: XRandom=0.1,VFactor,Residue
+               Real(8) :: XRandom=0.01,VFactor,Residue
                
                VFactor=1.d0/PB%VFactor
                 
                !If (PBDO%CountMinOne/=0.or.PBDO%CountMaxOne/=0) Write(*,*) "SEE!"
                
-               !PBDO%SEENparMin=Ceiling(PBDO%CountMinOne*PBDO%Gamma)
                PBDO%SEENparMin=Int(PBDO%CountMinOne*PBDO%Gamma)
                Residue=PBDO%CountMinOne*PBDO%Gamma-Dble(PBDO%SEENparMin)
                Call DRandom(R)
@@ -211,7 +231,6 @@ Module SEEModule
                 Call AddParticle(ParticleTemp,PB)
                enddo
                
-               !PBDO%SEENparMax=Ceiling(PBDO%CountMaxOne*PBDO%Gamma)
                PBDO%SEENparMax=Int(PBDO%CountMaxOne*PBDO%Gamma)
                Residue=PBDO%CountMaxOne*PBDO%Gamma-Dble(PBDO%SEENparMax)
                Call DRandom(R)

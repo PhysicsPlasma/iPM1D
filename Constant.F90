@@ -35,20 +35,30 @@ Module TypeModule
     !  This Section is the definitions of the physicla parameters.
 
               !
-              Integer(4),Parameter :: NxMax=101
-              Real(8),parameter,private :: ZLength=0.02d0
+              Integer(4),Parameter :: NxMax=113
+              Real(8),parameter,private :: ZLength=0.035d0
               Real(8),parameter :: Inputdx=ZLength/dble(NxMax-1)
               Real(8),parameter:: Inputdt=1.d-10  !4.d-12
               
-               Type :: Grid1D(Nx,Ns)
+              ! Type :: Test2
+              !          Real(8), Allocatable :: Test2(:)
+              !End Type
+
+              Type :: Grid2D(Nx,Ny,Ns)
+                        Integer(4),Len :: Nx=NxMax,Ny=1000,Ns=1_4
+                        Real(8) ::  Value(1:Nx,0:Ny,1:Ns)
+                         Real(8) :: Dx=0.d0,Dy=0.d0
+                         Integer(4) :: Timer=0,Period=1
+                        !Integer(4) :: NxAva=1,NyAva=1
+                End Type Grid2D
+     
+              Type :: Grid1D(Nx,Ns)
                         Integer(4),Len :: Nx=NxMax,Ns=1_4
                         Real(8) ::  Value(1:Nx,1:Ns)
                         Integer(4) :: Timer=0,Period=1
                         !Integer(4) :: NxAva=1
                         Real(8) :: Dx=0.d0
               End Type Grid1D
-
-
 
               Type  OneSpecy      ! Define a physical particle.
                        Character(len=16) Name
@@ -75,34 +85,19 @@ Module TypeModule
                      Real(8) ::  Threshold
                 End Type  ReactionOne
     
-                !
-                !Type ParticleOne
-                !    Real(8) ::  X,Vx,Vy,Vz,Ax,Ay,Az
-                !EndType ParticleOne
                 
-         Type,Abstract :: ParticleOneBase
-          Real(8) ::  Vx,Vy,Vz
-          
-          contains
-		     !procedure(ParticleOnePositionInitialization), deferred :: POPInit
-             !procedure(ParticleOneVelocityInitialization), deferred :: POVInit
-             !procedure(ParticleOneAccelerationInitialization), deferred :: POAInit
-          End Type 
-          
-           Type,extends(ParticleOneBase) ::  ParticleOne
-                    Real(8) ::  X,Ax,Ay,Az
-                    !contains
-		            !procedure :: POInit=>POInitParticleOne1D
-           EndType ParticleOne
+                Type ParticleOne
+                    Real(8) ::  X,Vx,Vy,Vz,Ax,Ay,Az
+                EndType ParticleOne
                 
                 !Type,extends(ParticleOne) :: ParticleOneTimer
                 !    Real(8) ::  Timer
                 !End Type ParticleOneTimer
 
-                Integer(4),parameter :: ParticlePerGrid=2000  !100 
-                Real(8),parameter :: InitDensity=1.d18  !1.d18 !5.d17  !1.d16
+                Integer(4),parameter :: ParticlePerGrid=400  !100 
+                Real(8),parameter :: InitDensity=1.d15  !1.d18 !5.d17  !1.d16
                 Real(8),parameter :: Weighting=InitDensity/ParticlePerGrid
-                Integer(4),Parameter :: NParMax=ParticlePerGrid*NxMax*5d0
+                Integer(4),Parameter :: NParMax=ParticlePerGrid*NxMax*5.0d0
                 !Integer(4),Parameter :: NSpecy=2
     
                 Type  :: ParticleBundle !(NParMax)
@@ -139,7 +134,7 @@ Module TypeModule
                         !Integer(4) :: XStart=0,XEnd=NxMax-1
                         Real(8) :: Dx=Inputdx,Dt=Inputdt
                         Real(8) ::  Ex(1:NxMax)=0.d0,Ey(1:NxMax)=0.d0!,Ey(0:Nx+1),Ez(0:Nx+1)
-                        Real(8) ::  Bx(1:NxMax)=0.d0,By(1:NxMax)=50.d-4!,Bz(0:Nx+1)
+                        Real(8) ::  Bx(1:NxMax)=0.d0,By(1:NxMax)=0.d0!,Bz(0:Nx+1)
                         Real(8) ::  Rho(1:NxMax),Phi(1:NxMax)
                         Real(8) ::  Chi(1:NxMax)
                    EndType Field
